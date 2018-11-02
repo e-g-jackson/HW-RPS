@@ -211,7 +211,6 @@ var playerCounter = function(){
             numSubs = snap.numChildren();
             if(numSubs < 2){
                 console.log('should repeat');
-                database.ref('/game').child('playerIds').set({player1 : (window.localStorage.userId)});
                 setTimeout(function(){
                     playerCounter();
                 }, 2000)
@@ -219,8 +218,11 @@ var playerCounter = function(){
         });
     }
     else if(numSubs == 2){
-        if(userId != database.ref('/game').child('player1')){
+        if(database.ref('/game').hasChild('player1')){
             database.ref('/game').child('playerIds').set({player2: (window.localStorage.userId)})
+        }
+        else if(userId != database.ref('/game').child('player1')){
+            database.ref('/game').child('playerIds').set({player1 : (window.localStorage.userId)});
         }
         console.log('now we compare')
         // $(mainDiv).empty();

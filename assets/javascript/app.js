@@ -18,7 +18,12 @@ var name;
 var userId;
 var info;
 var numUsers;
+var numSubs;
 
+var gameSubmissions = database.ref('/game');
+    gameSubmissions.on('value', function(snap){
+        numSubs = snap.numChildren();
+    })
 //tracking viewers
 var connectionsRef = database.ref('/connections');
 var connectedRef = database.ref('.info/connected');
@@ -165,13 +170,29 @@ var initialize = function(){
             $(infoDiv).html('Pick Rock, Paper, or Scissors! <br><br><br>')
             $(mainDiv).append(infoDiv);
             $(mainDiv).append(buttonDiv);
-
-        $('body').on('click', 'button', function(snap){
-            console.log('you\'ve made your move, now we wait.');
+        //submitting R,P, or S
+        $('body').on('click', 'button', function(){
+                console.log('you\'ve made your move, now we wait.');
             var buttonId = $(this).attr('id');
             var gameData = database.ref('/game/' + window.localStorage.userId);
-            gameData.set(buttonId);
-
+                gameData.set(buttonId);
+                console.log('number of submissions: ' + numSubs)
+            var compare = function(){
+                if(numSubs < 2){
+                    console.log('waiting for response')
+                    $(mainDiv).empty();
+                    $(mainDiv).html('<h2>Waiting for response!</h2>')
+                    $(gameSubmissions).on('value', function(){
+                        if(numSubs == 2){
+                            compare();
+                        }
+                    })
+                }
+                else if(numSubs == 2){
+                    console.log('now we compare')
+                }
+            }
+            compare();
         });
     }
 

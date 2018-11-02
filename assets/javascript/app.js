@@ -167,32 +167,17 @@ var initialize = function(){
             $(scissorsButton).attr('id', 'scissors');
             $(scissorsButton).attr('class', 'btn btn-lg btn-info');
             $(scissorsButton).appendTo(buttonDiv);
-            $(infoDiv).html('Pick Rock, Paper, or Scissors! <br><br><br>')
+            $(infoDiv).html('<h2>Pick Rock, Paper, or Scissors!</h2> <br><br><br>')
             $(mainDiv).append(infoDiv);
             $(mainDiv).append(buttonDiv);
+            
         //submitting R,P, or S
         $('body').on('click', 'button', function(){
                 console.log('you\'ve made your move, now we wait.');
             var buttonId = $(this).attr('id');
             var gameData = database.ref('/game/' + window.localStorage.userId);
                 gameData.set(buttonId);
-                console.log('number of submissions: ' + numSubs)
-            var compare = function(){
-                if(numSubs < 2){
-                    console.log('waiting for response')
-                    $(mainDiv).empty();
-                    $(mainDiv).html('<h2>Waiting for response!</h2>')
-                    $(gameSubmissions).on('value', function(){
-                        if(numSubs == 2){
-                            compare();
-                        }
-                    })
-                }
-                else if(numSubs == 2){
-                    console.log('now we compare')
-                }
-            }
-            compare();
+            playerCounter();
         });
     }
 
@@ -212,11 +197,50 @@ var initialize = function(){
             })
     }
     else if (numUsers > 2){
-        console.log('Sorry, too many users. Try again soon!')
+        console.log('Sorry, too many users. Try again soon!');
     }
 
 };
 
+var playerCounter = function(){
+    if(numSubs < 2){
+        console.log('waiting for response')
+        $(mainDiv).empty();
+        $(mainDiv).html('<h2>Waiting for response!</h2>')
+        gameSubmissions.on('value', function(snap){
+            numSubs = snap.numChildren();
+            if(numSubs < 2){
+                console.log('should repeat');
+                database.ref('/game').child('playerIds').set({player1 : (window.localStorage.userId)});
+                setTimeout(function(){
+                    playerCounter();
+                }, 2000)
+            }
+        });
+    }
+    else if(numSubs == 2){
+        if(userId != database.ref('/game').child('player1')){
+            database.ref('/game').child('playerIds').set({player2: (window.localStorage.userId)})
+        }
+        console.log('now we compare')
+        // $(mainDiv).empty();
+        // $(mainDiv).html('<h2>Comparing...</h2>')
+        compare();
+    }
+}
+//Compares submission values & decides winner
+var compare = function(){
+    console.log('compare function running!')
+    // var game = database.ref('/game')
+    // window.localStorage.setItem({'gameData' : game});
+    // console.log(window.localStorage.game)
+    // var player1 = database.ref('/game/' + window.localStorage.userId);
+    // var player2 = database.ref('/game');
+    // console.log(player1);
+    // console.log(player2);
+};
+
+//Shows Firebase Changes in Console
 database.ref().on('value', function(snapshot){
     console.log(JSON.stringify(snapshot))
 });

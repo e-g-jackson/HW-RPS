@@ -1,0 +1,33 @@
+body{
+    background-color: black;
+    color: white;
+}
+
+button{
+    margin:10px;
+}
+
+header{
+    background-color: darkblue;
+    text-align: center;
+    padding: 15px;
+    width: 100%;
+    position: fixed;
+    top: 0px;
+    z-index: 1;
+}
+#mainDiv{
+    background-color: darkcyan;
+    position: absolute;
+    top: 120px;
+    left: 5%;
+    min-height: 500px;
+    width: 90%;
+    text-align: center;
+}
+#connectionsDiv{
+    position: absolute;
+    top: 650px;
+    width: 100%;
+    text-align: center;
+}

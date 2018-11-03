@@ -1,5 +1,5 @@
 var mainDiv = document.getElementById('mainDiv');
-
+// remover of "" --> .replace(/['"]+/g, '')
 // Initialize Firebase
 var config = {
     apiKey: "AIzaSyAi9FA4lGeKeKcjtxqBziNNUU22GSJM7nk",
@@ -23,7 +23,9 @@ var numSubs;
 var gameSubmissions = database.ref('/game');
     gameSubmissions.on('value', function(snap){
         numSubs = snap.numChildren();
+        console.log("number in game: " + snap.numChildren())
     })
+
 //tracking viewers
 var connectionsRef = database.ref('/connections');
 var connectedRef = database.ref('.info/connected');
@@ -56,7 +58,6 @@ var startScreen = function(){
 
 var setupGame = function(){
     console.log('setupGame function');
-    // console.log(typeof window.storage.userId);
 
         //check localStorage for previously saved 'userId'
         if (typeof (window.localStorage.userId) === 'null' || typeof (window.localStorage.userId) === 'undefined'){
@@ -86,7 +87,7 @@ var setupGame = function(){
                 window.localStorage.setItem('name', name);
                 info = {
                     screenName: name,
-                    userId: userId,
+                    userId: userId.replace(/['"]+/g, ''),
                     wins:0,
                     losses:0,
                 }
@@ -94,9 +95,9 @@ var setupGame = function(){
                 console.log(JSON.parse(JSON.stringify(info)));
                     
                     
-                database.ref('/ids').child(userId).set({
+                database.ref('/ids').child(userId.replace(/['"]+/g, '')).set({
                     screenName: info.screenName,
-                    userId: userId,
+                    userId: userId.replace(/['"]+/g, ''),
                     wins: info.wins,
                     losses: info.losses,
                 });
@@ -136,9 +137,9 @@ function userIdGenerator(){
     var pt8 = Math.floor((Math.random() * 9 ) + 1);
     var pt9 = Math.floor((Math.random() * 9 ) + 1);
     var pt0 = Math.floor((Math.random() * 9 ) + 1);
-    userId = '"' + pt1 + pt2 + pt3 + pt4 + pt5 + pt6 + pt7 + pt8 + pt9 + pt0 + '"';
-    window.localStorage.setItem('userId', userId);
-    console.log('userId = ' + userId);
+    userId = "'" + pt1 + pt2 + pt3 + pt4 + pt5 + pt6 + pt7 + pt8 + pt9 + pt0 + "'";
+    window.localStorage.setItem('userId', userId.replace(/['"]+/g, ''));
+    console.log('userId = ' + userId.replace(/['"]+/g, ''));
 };
 
 var initialize = function(){
@@ -177,6 +178,7 @@ var initialize = function(){
             var buttonId = $(this).attr('id');
             var gameData = database.ref('/game/' + window.localStorage.userId);
                 gameData.set(buttonId);
+            window.localStorage.setItem('playerSub', buttonId)
             playerCounter();
         });
     }
@@ -203,7 +205,7 @@ var initialize = function(){
 };
 
 var playerCounter = function(){
-    if(numSubs < 2){
+    if(numSubs < 2){ 
         console.log('waiting for response')
         $(mainDiv).empty();
         $(mainDiv).html('<h2>Waiting for response!</h2>')
@@ -213,43 +215,70 @@ var playerCounter = function(){
                 console.log('should repeat');
                 setTimeout(function(){
                     playerCounter();
-                }, 2000)
+                }, 1000)
             }
         });
     }
     else if(numSubs == 2){
-        if(database.ref('/game').hasChild('player1')){
-            database.ref('/game').child('playerIds').set({player2: (window.localStorage.userId)})
-        }
-        else if(userId != database.ref('/game').child('player1')){
-            database.ref('/game').child('playerIds').set({player1 : (window.localStorage.userId)});
-        }
+        var gameIds = database.ref('/playerIds');
+        console.log(gameIds.child('player1'))
+        gameIds.once('value', function(snap) {
+            if(snap.child('player1').val() == true){
+                database.ref('/playerIds').update({player1 : (window.localStorage.userId)});
+                window.localStorage.setItem('playerNum', 'player1');
+            }
+            else if(snap.child('player1').val() != true && snap.child('player2').val() == true){
+                database.ref('/playerIds').update({player2 : (window.localStorage.userId)});
+                window.localStorage.setItem('playerNum', 'player2');
+            }
+        });
+        gameIds.on('value', function(snap){
+            if (window.localStorage.playerNum == "player1"){
+                window.localStorage.setItem('opponentNum', snap.child('/player2').val())
+            }
+            else if (window.localStorage.playerNum == "player2"){
+                window.localStorage.setItem('opponentNum', snap.child('/player1').val())
+            }
+        })
         console.log('now we compare')
-        // $(mainDiv).empty();
-        // $(mainDiv).html('<h2>Comparing...</h2>')
+        $(mainDiv).empty();
+        $(mainDiv).html('<h2>Comparing...</h2>')
         compare();
     }
 }
 //Compares submission values & decides winner
 var compare = function(){
     console.log('compare function running!')
-    // var game = database.ref('/game')
-    // window.localStorage.setItem({'gameData' : game});
-    // console.log(window.localStorage.game)
-    // var player1 = database.ref('/game/' + window.localStorage.userId);
-    // var player2 = database.ref('/game');
-    // console.log(player1);
-    // console.log(player2);
+    var playerNumber = window.localStorage.userId;
+    var oppoNum = window.localStorage.opponentNum;
+    console.log('playerNumber: ' + playerNumber + ' oppoNum:' + oppoNum)
+    var oppoSub = database.ref('/game/' + oppoNum)
+    oppoSub.once('value', function(snap){
+        var opponentSubmission = snap.val();
+        window.localStorage.setItem('oppoSub', opponentSubmission);
+        console.log(opponentSubmission);
+    })
+    // var oppoSays = database.ref('/game').key();
+    //     console.log('usernumber: ' + playerNumber);
+    //     console.log('opponentNumber: ' + oppoSays);
+    // var oppoSub;
+    // oppoSays.on('value', function(snap){
+    //     oppoSub = window.localStorage.setItem('oppoSub', snap.child(oppoNum).val()); 
+    //     console.log('This is opposub: ' + oppoSub);
+    // });
 };
 
 //Shows Firebase Changes in Console
-database.ref().on('value', function(snapshot){
-    console.log(JSON.stringify(snapshot))
-});
+// database.ref().on('value', function(snapshot){
+//     console.log(JSON.stringify(snapshot))
+// });
 
 //page-ready instructions
 $(document).ready(function(){
     console.log('first!');
     console.log(JSON.stringify(localStorage));
+    //resets database...move?
+    database.ref('/playerIds').set({player1: true, player2: true})
+    gameSubmissions.remove();
     startScreen();
 });

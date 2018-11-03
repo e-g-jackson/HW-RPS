@@ -232,14 +232,16 @@ var playerCounter = function(){
                 window.localStorage.setItem('playerNum', 'player2');
             }
         });
-        gameIds.on('value', function(snap){
-            if (window.localStorage.playerNum == "player1"){
-                window.localStorage.setItem('opponentNum', snap.child('/player2').val())
-            }
-            else if (window.localStorage.playerNum == "player2"){
-                window.localStorage.setItem('opponentNum', snap.child('/player1').val())
-            }
-        })
+        setInterval(function(){
+            gameIds.once('value', function(snap){
+                if (window.localStorage.playerNum == "player1"){
+                    window.localStorage.setItem('opponentNum', snap.child('/player2').val())
+                }
+                else if (window.localStorage.playerNum == "player2"){
+                    window.localStorage.setItem('opponentNum', snap.child('/player1').val())
+                }
+            })
+        }, 2000);
         console.log('now we compare')
         $(mainDiv).empty();
         $(mainDiv).html('<h2>Comparing...</h2>')
@@ -252,22 +254,56 @@ var compare = function(){
     var playerNumber = window.localStorage.userId;
     var oppoNum = window.localStorage.opponentNum;
     console.log('playerNumber: ' + playerNumber + ' oppoNum:' + oppoNum)
-    var oppoSub = database.ref('/game/' + oppoNum)
-    oppoSub.once('value', function(snap){
+    var oppoSubmission = database.ref('/game/' + oppoNum)
+    oppoSubmission.once('value', function(snap){
         var opponentSubmission = snap.val();
         window.localStorage.setItem('oppoSub', opponentSubmission);
         console.log(opponentSubmission);
-    })
-    // var oppoSays = database.ref('/game').key();
-    //     console.log('usernumber: ' + playerNumber);
-    //     console.log('opponentNumber: ' + oppoSays);
-    // var oppoSub;
-    // oppoSays.on('value', function(snap){
-    //     oppoSub = window.localStorage.setItem('oppoSub', snap.child(oppoNum).val()); 
-    //     console.log('This is opposub: ' + oppoSub);
-    // });
+    });
+    var oppoSub = window.localStorage.opposub;
+    var playerSub = window.localStorage.playerSub;
+    if(playerSub == 'rock' && oppoSub == 'rock'){ Tie() }
+    else if(playerSub == 'rock' && oppoSub == 'paper'){ lose() }
+    else if(playerSub == 'rock' && oppoSub == 'scissors'){ win() }
+    else if(playerSub == 'paper' && oppoSub == 'rock'){ win() }
+    else if(playerSub == 'paper' && oppoSub == 'paper'){ Tie() }
+    else if(playerSub == 'paper' && oppoSub == 'scissors'){ lose() }
+    else if(playerSub == 'scissors' && oppoSub == 'rock'){ lose() }
+    else if(playerSub == 'scissors' && oppoSub == 'paper'){ win() }
+    else if(playerSub == 'scissors' && oppoSub == 'scissors'){ Tie() }
 };
+var tie = function(){
+    var tieMessage = document.createElement('div')
+        $(tieMessage).html('<h2>You Tied!</h2>')
+        $(mainDiv).empty();
+        $(tieMessage).appendTo(mainDiv);
 
+        startOver();
+    
+};
+var win = function(){
+    var winMessage = document.createElement('div')
+    $(winMessage).html('<h2>You Won!</h2>')
+    $(mainDiv).empty();
+    $(winMessage).appendTo(mainDiv);
+    startOver();
+};
+var lose = function(){
+    var loseMessage = document.createElement('div')
+    $(loseMessage).html('<h2>You Lost!</h2>')
+    $(mainDiv).empty();
+    $(loseMessage).appendTo(mainDiv);
+    startOver();
+};
+var startOver = function(){
+    var sOver = document.createElement('button');
+        $(sOver).attr('id', 'startOverButton');
+        $(sOver).attr('class', 'btn btn-lg btn-info')
+        $(sOver).appendTo(mainDiv);
+        $(sOver).on('click', function(){
+            initialize();
+        })
+};
 //Shows Firebase Changes in Console
 // database.ref().on('value', function(snapshot){
 //     console.log(JSON.stringify(snapshot))

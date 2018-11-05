@@ -20,6 +20,29 @@ var info;
 var numUsers;
 var numSubs;
 
+var userData = database.ref('/ids/' + window.localStorage.userId)
+var subHeaderCreator = function(){
+    var subHeader = document.createElement('span');
+    var pName = '<span id = \'pName\'></span>';
+    var ws = '<span id = \'ws\'></span>';
+    var ls = '<span id = \'ls\'></span>';
+        $(subHeader).html('Name: ' + pName + '   Wins: ' + ws + '   Losses: ' + ls );
+        $(subHeader).attr('id', 'subHeader');
+        $(subHeader).appendTo('body');
+        subHeaderFxn();
+}
+var subHeaderFxn = function(){
+    userData.on('value', function(snap){
+    var name = snap.child('screenName').val();
+    var wins = snap.child('wins').val();
+    var losses = snap.child('losses').val();
+    $('#pName').text(name)
+    $('#ws').text(wins);
+    $('#ls').text(losses);
+    console.log('wins: ' + wins)
+    console.log('losses: ' + losses)
+    })
+};
 var gameSubmissions = database.ref('/game');
     gameSubmissions.on('value', function(snap){
         numSubs = snap.numChildren();
@@ -52,6 +75,7 @@ var startScreen = function(){
     $(mainDiv).html('<h2>Multiplayer mode!</h2><br><p>Click the start button to continue!</p>');
     $(mainDiv).append(startButton);
     $(startButton).on('click', function(){
+        subHeaderFxn();
         setupGame();
     })
 };
@@ -253,61 +277,85 @@ var compare = function(){
     console.log('compare function running!')
     var playerNumber = window.localStorage.userId;
     var oppoNum = window.localStorage.opponentNum;
-    console.log('playerNumber: ' + playerNumber + ' oppoNum:' + oppoNum)
     var oppoSubmission = database.ref('/game/' + oppoNum)
-    oppoSubmission.once('value', function(snap){
-        var opponentSubmission = snap.val();
-        window.localStorage.setItem('oppoSub', opponentSubmission);
-        console.log(opponentSubmission);
+    var oppoSub;
+    var playerSub;
+    oppoSubmission.on('value', function(snap){
+        var oppoSubmission = snap.val();
+        if(oppoSubmission == null){ setTimeout(function(){ compare() }, 2000)}
+        else {
+        window.localStorage.setItem('oppoSub', oppoSubmission);
+        oppoSub = window.localStorage.oppoSub;
+        playerSub = window.localStorage.playerSub;
+        console.log('playerNumber: ' + playerNumber + ' oppoNum:' + oppoNum);
+        console.log('playerSubmission: ' + playerSub + ' opponentSubmission: ' + oppoSub);
+        if(playerSub == 'rock' && oppoSub == 'rock'){ tie() }
+        else if(playerSub == 'rock' && oppoSub == 'paper'){ lose() }
+        else if(playerSub == 'rock' && oppoSub == 'scissors'){ win() }
+        else if(playerSub == 'paper' && oppoSub == 'rock'){ win() }
+        else if(playerSub == 'paper' && oppoSub == 'paper'){ tie() }
+        else if(playerSub == 'paper' && oppoSub == 'scissors'){ lose() }
+        else if(playerSub == 'scissors' && oppoSub == 'rock'){ lose() }
+        else if(playerSub == 'scissors' && oppoSub == 'paper'){ win() }
+        else if(playerSub == 'scissors' && oppoSub == 'scissors'){ tie() }}
     });
-    var oppoSub = window.localStorage.opposub;
-    var playerSub = window.localStorage.playerSub;
-    if(playerSub == 'rock' && oppoSub == 'rock'){ Tie() }
-    else if(playerSub == 'rock' && oppoSub == 'paper'){ lose() }
-    else if(playerSub == 'rock' && oppoSub == 'scissors'){ win() }
-    else if(playerSub == 'paper' && oppoSub == 'rock'){ win() }
-    else if(playerSub == 'paper' && oppoSub == 'paper'){ Tie() }
-    else if(playerSub == 'paper' && oppoSub == 'scissors'){ lose() }
-    else if(playerSub == 'scissors' && oppoSub == 'rock'){ lose() }
-    else if(playerSub == 'scissors' && oppoSub == 'paper'){ win() }
-    else if(playerSub == 'scissors' && oppoSub == 'scissors'){ Tie() }
 };
 var tie = function(){
     var tieMessage = document.createElement('div')
         $(tieMessage).html('<h2>You Tied!</h2>')
         $(mainDiv).empty();
         $(tieMessage).appendTo(mainDiv);
-
+        subHeaderFxn();
         startOver();
     
 };
 var win = function(){
-    var winMessage = document.createElement('div')
-    $(winMessage).html('<h2>You Won!</h2>')
-    $(mainDiv).empty();
-    $(winMessage).appendTo(mainDiv);
+    console.log('win function!')
+    var winMessage = document.createElement('div');
+        $(winMessage).html('<h2>You Won!</h2>');
+        $(mainDiv).empty();
+        $(winMessage).appendTo(mainDiv);
+    var winNum = database.ref('/ids/' + window.localStorage.userId);
+    winNum.once('value', function(snap){
+        var number = snap.child('wins').val();
+        console.log('win num reads ' + number);
+        // var changedNumber = number + 1;
+        // console.log(changedNumber);
+        winNum.update({wins: (number + 1)});
+    });
+    subHeaderFxn();
     startOver();
 };
 var lose = function(){
+    console.log('lose function!')
     var loseMessage = document.createElement('div')
     $(loseMessage).html('<h2>You Lost!</h2>')
     $(mainDiv).empty();
     $(loseMessage).appendTo(mainDiv);
+    var loseNum = database.ref('/ids/' + window.localStorage.userId);
+    loseNum.once('value', function(snap){
+        var number = snap.child('losses').val();
+        console.log('lose num reads ' + number);
+        // var changedNumber = number + 1;
+        // console.log(changedNumber);
+        loseNum.update({losses: (number + 1)});
+    });
+    subHeaderFxn();
     startOver();
 };
 var startOver = function(){
+    localStorage.removeItem('playerSub');
+    localStorage.removeItem('oppoSub');
+    database.ref('/playerIds').set({player1: true, player2: true})
     var sOver = document.createElement('button');
         $(sOver).attr('id', 'startOverButton');
         $(sOver).attr('class', 'btn btn-lg btn-info')
+        $(sOver).text('Start Over')
         $(sOver).appendTo(mainDiv);
         $(sOver).on('click', function(){
-            initialize();
+            window.location.reload(true);
         })
 };
-//Shows Firebase Changes in Console
-// database.ref().on('value', function(snapshot){
-//     console.log(JSON.stringify(snapshot))
-// });
 
 //page-ready instructions
 $(document).ready(function(){
@@ -316,5 +364,6 @@ $(document).ready(function(){
     //resets database...move?
     database.ref('/playerIds').set({player1: true, player2: true})
     gameSubmissions.remove();
+    subHeaderCreator();
     startScreen();
 });

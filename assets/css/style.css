@@ -16,6 +16,12 @@ header{
     top: 0px;
     z-index: 1;
 }
+#connectionsDiv{
+    position: absolute;
+    top: 650px;
+    width: 100%;
+    text-align: center;
+}
 #mainDiv{
     background-color: darkcyan;
     position: absolute;
@@ -25,9 +31,10 @@ header{
     width: 90%;
     text-align: center;
 }
-#connectionsDiv{
-    position: absolute;
-    top: 650px;
+#subHeader{
+    background-color: darkgreen;
+    position: fixed;
+    top: 86px;
     width: 100%;
     text-align: center;
 }

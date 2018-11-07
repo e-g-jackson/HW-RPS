@@ -23,18 +23,20 @@ header{
     text-align: center;
 }
 #mainDiv{
-    background-color: darkcyan;
+    background-color: darkblue;
     position: absolute;
-    top: 120px;
+    top: 130px;
     left: 5%;
     min-height: 500px;
     width: 90%;
     text-align: center;
 }
 #subHeader{
-    background-color: darkgreen;
+    background-color: darkblue;
     position: fixed;
     top: 86px;
     width: 100%;
     text-align: center;
+    border-bottom: 2px white solid;
+    border-top: 2px white solid;
 }

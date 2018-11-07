@@ -66,9 +66,9 @@ var startScreen = function(){
     var startButton = document.createElement('button');
     $(startButton).text('Start!');
     $(startButton).attr('id', 'startButton')
-    $(startButton).attr('class', 'btn btn-lg btn-info')
+    $(startButton).attr('class', 'btn btn-lg btn-outline-light')
     $(mainDiv).empty();
-    $(mainDiv).html('<h2>Multiplayer mode!</h2><br><p>Click the start button to continue!</p>');
+    $(mainDiv).html('<h2>Multiplayer mode!</h2><br>Once two players are ready, the Rock, Paper, Scissors game will begin!<br><br><p>Click the start button to continue!</p>');
     $(mainDiv).append(startButton);
     $(startButton).on('click', function(){
         subHeaderFxn();
@@ -86,7 +86,7 @@ var setupGame = function(){
                 $(inputName).attr('id', 'nameBox');
                 $(inputName).attr('placeholder', 'What would you like to be called?');
                 $(inputButton).attr('id', 'inputButton');
-                $(inputButton).attr('class', 'btn btn-lg btn-info');
+                $(inputButton).attr('class', 'btn btn-lg btn-outline-light');
                 $(inputButton).text('Find Opponent!');
                 $(mainDiv).empty();
                 $(mainDiv).html('Find an Opponent!')
@@ -122,7 +122,7 @@ var setupGame = function(){
             var welcomeDiv = document.createElement('div');
             var goButton = document.createElement('button');
                 $(goButton).attr('id', 'goButton');
-                $(goButton).attr('class', 'btn btn-lg btn-info');
+                $(goButton).attr('class', 'btn btn-lg btn-outline-light');
                 $(goButton).text('Go!')
             nameRecall = window.localStorage.name
             info = database.ref('/ids').child(identity);
@@ -162,19 +162,19 @@ var initialize = function(){
         var buttonDiv = document.createElement('div');
             $(buttonDiv).attr('id', 'buttonDiv');
         var rockButton = document.createElement('button');
-            $(rockButton).text('Rock');
+            $(rockButton).html('<i class="far fa-hand-rock fa-3x"></i><h3>Rock</h3>');
             $(rockButton).attr('id', 'rock');
-            $(rockButton).attr('class', 'btn btn-lg btn-info');
+            $(rockButton).attr('class', 'btn btn-lg btn-outline-light');
             $(rockButton).appendTo(buttonDiv);
         var paperButton = document.createElement('button');
-            $(paperButton).text('Paper');
+            $(paperButton).html('<i class="far fa-hand-paper fa-3x"></i><h3>Paper</h3>');
             $(paperButton).attr('id', 'paper');
-            $(paperButton).attr('class', 'btn btn-lg btn-info');
+            $(paperButton).attr('class', 'btn btn-lg btn-outline-light');
             $(paperButton).appendTo(buttonDiv);
         var scissorsButton = document.createElement('button');
-            $(scissorsButton).text('Scissors');
+            $(scissorsButton).html('<i class="far fa-hand-scissors fa-3x"></i><h3>Scissors</h3>');
             $(scissorsButton).attr('id', 'scissors');
-            $(scissorsButton).attr('class', 'btn btn-lg btn-info');
+            $(scissorsButton).attr('class', 'btn btn-lg btn-outline-light');
             $(scissorsButton).appendTo(buttonDiv);
             $(infoDiv).html('<h2>Pick Rock, Paper, or Scissors!</h2> <br><br><br>')
             $(mainDiv).append(infoDiv);
@@ -197,11 +197,11 @@ var initialize = function(){
             $(sorryDiv).appendTo(mainDiv);
         var sorryButton = document.createElement('button');
             $(sorryButton).attr('id', 'sorryButton');
-            $(sorryButton).attr('class', 'btn btn-lg btn-info')
+            $(sorryButton).attr('class', 'btn btn-lg btn-outline-light')
             $(sorryButton).text('Try Again?');
             $(sorryButton).appendTo(mainDiv);
             $(sorryButton).on('click', function(){
-                initialize();
+                window.location.reload(true);
             })
     }
     else if (numUsers > 2){
@@ -318,7 +318,7 @@ var startOver = function(){
     database.ref('/playerIds').set({player1: true, player2: true})
     var sOver = document.createElement('button');
         $(sOver).attr('id', 'startOverButton');
-        $(sOver).attr('class', 'btn btn-lg btn-info')
+        $(sOver).attr('class', 'btn btn-lg btn-outline-light')
         $(sOver).text('Start Over')
         $(sOver).appendTo(mainDiv);
         $(sOver).on('click', function(){
